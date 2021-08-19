@@ -1,6 +1,23 @@
  Learning RESTful API with Go
 
 
+
+
+Simple RESTful API to create, read, update and delete books. No database implementation yet
+
+
+```
+Simple RESTful API to create, read, update and delete books. No database implementation yet
+```
+
+```
+go build
+./go_restapi
+
+```
+
+
+# Endpoints
 ## GET
 
 ```
