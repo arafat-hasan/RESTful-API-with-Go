@@ -49,8 +49,8 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	// Iterate through books and find with id
 	for _, item := range books {
 		if item.ID == params["id"] {
-			json.NewEncoder(w).Encode((item))
 			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode((item))
 			return
 		}
 	}
@@ -65,8 +65,8 @@ var addBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	_ = json.NewDecoder(r.Body).Decode(&book)
 	book.ID = strconv.Itoa(rand.Intn(1000000)) // mock data - not safe
 	books = append(books, book)
-	json.NewEncoder(w).Encode(book)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(book)
 })
 
 var updateBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -80,8 +80,8 @@ var updateBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 			_ = json.NewDecoder(r.Body).Decode(&book)
 			book.ID = params["id"]
 			books = append(books, book)
-			json.NewEncoder(w).Encode(book)
 			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(book)
 			return
 		}
 	}
@@ -97,8 +97,8 @@ var deleteBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 			break
 		}
 	}
-	json.NewEncoder(w).Encode(books)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(books)
 })
 
 func handleRequests() {
