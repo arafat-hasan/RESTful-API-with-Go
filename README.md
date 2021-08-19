@@ -68,8 +68,8 @@ http://localhost:8000/books/{id}
 Acessing secure apis:
 
   - Obtain a JWT token here: /static/authenticate.html
-    - enter programName:programPassword (neo:keanu)
-    - the response contains a JWT token for that program
+    - Enter username:password > admin:12345,member:12345
+    - The response contains a JWT token for that program
 
  - Use the token when calling any secure api:
     - set the Authorization request header and add the jwt token, like so:
