@@ -7,10 +7,6 @@ Simple RESTful API to create, read, update and delete books. No database impleme
 
 
 ```
-Simple RESTful API to create, read, update and delete books. No database implementation yet
-```
-
-```
 go build
 ./go_restapi
 
@@ -47,7 +43,7 @@ Content-Type:application/json
 
 URL
 ```
-http://localhost:8000/books/{random-id}
+http://localhost:8000/books/{specific-id}
 ```
 Body
  ```
@@ -67,4 +63,15 @@ URL
 ```
 http://localhost:8000/books/{id}
 ```
+
+
+Acessing secure apis:
+
+  - Obtain a JWT token here: /static/authenticate.html
+    - enter programName:programPassword (neo:keanu)
+    - the response contains a JWT token for that program
+
+ - Use the token when calling any secure api:
+    - set the Authorization request header and add the jwt token, like so:
+    - Authorization: Bearer \<token\>
 
