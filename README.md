@@ -34,10 +34,12 @@ Body
 "author":{"firstname":"Harry",  "lastname":"White"}
 }
  ```
+
 Header:
+```
 Key:Value
 Content-Type:application/json
-
+```
 
 ## PUT
 
@@ -53,9 +55,12 @@ Body
 "author":{"firstname":"Harry",  "lastname":"White"}
 }
  ```
+
 Header:
+```
 Key:Value
 Content-Type:application/json
+```
 
 ## DELETE
 
