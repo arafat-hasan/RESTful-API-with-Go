@@ -41,7 +41,6 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	mongoDataStore := NewDatastore(cfg, log)
 
 	filter := bson.D{}
-
 	cursor, err := query(mongoDataStore, "testCollection", filter)
 
 	if err != nil {
@@ -49,9 +48,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var results []bson.D
-
 	if err := cursor.All(mongoDataStore.Context, &results); err != nil {
-
 		panic(err)
 	}
 
@@ -64,7 +61,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
-
 	mongoDataStore := NewDatastore(cfg, log)
 
 	filter := bson.D{
@@ -77,7 +73,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var results []bson.D
-
 	if err := cursor.All(mongoDataStore.Context, &results); err != nil {
 		panic(err)
 	}

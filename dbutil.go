@@ -10,39 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//var client *mongo.Client
-//var ctx context.Context
-
-//func close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
-
-//  defer cancel()
-
-//  defer func() {
-
-//    if err := client.Disconnect(ctx); err != nil {
-//      panic(err)
-//    }
-//  }()
-//}
-
-//func connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
-
-//  ctx, cancel := context.WithTimeout(context.Background(),
-//    30*time.Second)
-
-//  client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-//  return client, ctx, cancel, err
-//}
-
-//func ping(client *mongo.Client, ctx context.Context) error {
-
-//  if err := client.Ping(ctx, readpref.Primary()); err != nil {
-//    return err
-//  }
-//  fmt.Println("connected successfully")
-//  return nil
-//}
-
 type MongoDatastore struct {
 	db      *mongo.Database
 	Client  *mongo.Client
@@ -85,7 +52,7 @@ func UpdateOne(mongoDataStore *MongoDatastore, _collection string, filter, updat
 	dataBase := mongoDataStore.db
 	collection := dataBase.Collection(_collection)
 	result, err = collection.UpdateOne(ctx, filter, update)
-	return
+	return result, err
 }
 
 func UpdateMany(mongoDataStore *MongoDatastore, _collection string, filter, update interface{}) (result *mongo.UpdateResult, err error) {
