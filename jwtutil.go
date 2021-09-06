@@ -1,6 +1,6 @@
 package main
 
-import jwt "github.com/dgrijalva/jwt-go"
+import jwt "github.com/golang-jwt/jwt"
 
 func getToken(name string) (string, error) {
 	signingKey := []byte("keymaker")
