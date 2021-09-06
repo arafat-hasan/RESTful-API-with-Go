@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -11,23 +10,26 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/yaml.v2"
 )
 
-// Book struct (Model)
 type Book struct {
-	ID     string  `json:"id"`
-	Isbn   string  `json:"isbn"`
-	Title  string  `json:"title"`
-	Author *Author `json:"author"`
+	ID     string  `json:"id" bson:"id"`
+	Isbn   string  `json:"isbn" bson:"isbn"`
+	Title  string  `json:"title" bson:"title"`
+	Author *Author `json:"author" bson:"author"`
 }
 
-// Author struct
 type Author struct {
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
+	Firstname string `json:"firstname" bson:"firstname"`
+	Lastname  string `json:"lastname" bson:"lastname"`
 }
 
 var books []Book
+var log = logrus.New()
+var cfg Config
 
 func homePage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -38,8 +40,43 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	log.Println("getBooks called")
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(books)
-	w.WriteHeader(http.StatusOK)
+	mongoDataStore := NewDatastore(cfg, log)
+	var filter, option interface{}
+
+	// filter  gets all document,
+	// with maths field greater that 70
+	filter = bson.D{}
+
+	//  option remove id field from all documents
+	option = bson.D{}
+
+	cursor, err := query(mongoDataStore, "testCollection", filter, option)
+
+	// handle the errors.
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(cursor)
+
+	//var results []bson.D
+
+	// to get bson object  from cursor,
+	// returns error if any.
+	//if err := cursor.All(mongoDataStore.Context, &results); err != nil {
+
+	// handle the error
+	//  panic(err)
+	//}
+
+	// printing the result of query.
+	//fmt.Println("Query Reult")
+	//for _, doc := range results {
+	//  fmt.Println(doc)
+	//}
+
+	//json.NewEncoder(w).Encode(results)
+	//w.WriteHeader(http.StatusOK)
 }
 
 func getBook(w http.ResponseWriter, r *http.Request) {
@@ -118,10 +155,60 @@ func handleRequests() {
 	log.Fatal(http.ListenAndServe(":8000", handlers.LoggingHandler(os.Stdout, router)))
 }
 
+type Config struct {
+	Database struct {
+		Name string `yaml:"name"`
+		Host string `yaml:"host"`
+	} `yaml:"database"`
+}
+
+func processError(err error) {
+	fmt.Println(err)
+	os.Exit(2)
+}
+
 func main() {
 
 	// Hardcoded data - @todo: add database
-	books = append(books, Book{ID: "1", Isbn: "438227", Title: "Book One", Author: &Author{Firstname: "John", Lastname: "Doe"}})
-	books = append(books, Book{ID: "2", Isbn: "454555", Title: "Book Two", Author: &Author{Firstname: "Steve", Lastname: "Smith"}})
+	//book1 := Book{ID: "1", Isbn: "438227", Title: "Book One", Author: &Author{Firstname: "John", Lastname: "Doe"}}
+	//book2 := Book{ID: "2", Isbn: "454555", Title: "Book Two", Author: &Author{Firstname: "Steve", Lastname: "Smith"}}
+
+	f, err := os.Open(".config.yml")
+	if err != nil {
+		processError(err)
+	}
+	defer f.Close()
+
+	decoder := yaml.NewDecoder(f)
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		processError(err)
+	}
+
+	//fmt.Println(cfg)
+
+	//logger := logrus.Logger{
+	//  Out: os.Stdout,
+	//}
+	log.Out = os.Stdout
 	handleRequests()
+
+	//log.Printf("Log message")
+
+	//fmt.Println(mongoDataStore)
+
+	//defer close(client, ctx, cancel)
+
+	//_, err = insertOne(mongoDataStore, "testCollection", book1)
+	//if err != nil {
+	//  panic(err)
+	//}
+	//println("book2 inserted")
+
+	//_, err = insertOne(mongoDataStore, "testCollection", book2)
+	//if err != nil {
+	//  panic(err)
+	//}
+	//println("book2 inserted")
+
 }
