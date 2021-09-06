@@ -69,13 +69,14 @@ func insertMany(mongoDataStore *MongoDatastore, _collection string, docs []inter
 	return result, err
 }
 
-func query(mongoDataStore *MongoDatastore, _collection string, query, field interface{}) (result *mongo.Cursor, err error) {
+func query(mongoDataStore *MongoDatastore, _collection string, query interface{}) (result *mongo.Cursor, err error) {
 	//client := mongoDataStore.Client
 	ctx := mongoDataStore.Context
 	dataBase := mongoDataStore.db
 	collection := dataBase.Collection(_collection)
-	result, err = collection.Find(ctx, query, options.Find().SetProjection(field))
-	return
+	// result, err = collection.Find(ctx, query, options.Find().SetProjection(field))
+	result, err = collection.Find(ctx, query)
+	return result, err
 }
 
 func UpdateOne(mongoDataStore *MongoDatastore, _collection string, filter, update interface{}) (result *mongo.UpdateResult, err error) {
@@ -102,7 +103,7 @@ func deleteOne(mongoDataStore *MongoDatastore, _collection string, query interfa
 	dataBase := mongoDataStore.db
 	collection := dataBase.Collection(_collection)
 	result, err = collection.DeleteOne(ctx, query)
-	return
+	return result, err
 }
 
 func deleteMany(mongoDataStore *MongoDatastore, _collection string, query interface{}) (result *mongo.DeleteResult, err error) {

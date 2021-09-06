@@ -3,15 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/yaml.v2"
 )
 
@@ -41,58 +39,51 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	log.Println("getBooks called")
 	w.Header().Set("Content-Type", "application/json")
 	mongoDataStore := NewDatastore(cfg, log)
-	var filter, option interface{}
 
-	// filter  gets all document,
-	// with maths field greater that 70
-	filter = bson.D{}
+	filter := bson.D{}
 
-	//  option remove id field from all documents
-	option = bson.D{}
+	cursor, err := query(mongoDataStore, "testCollection", filter)
 
-	cursor, err := query(mongoDataStore, "testCollection", filter, option)
-
-	// handle the errors.
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(cursor)
+	var results []bson.D
 
-	//var results []bson.D
+	if err := cursor.All(mongoDataStore.Context, &results); err != nil {
 
-	// to get bson object  from cursor,
-	// returns error if any.
-	//if err := cursor.All(mongoDataStore.Context, &results); err != nil {
+		panic(err)
+	}
 
-	// handle the error
-	//  panic(err)
-	//}
-
-	// printing the result of query.
-	//fmt.Println("Query Reult")
-	//for _, doc := range results {
-	//  fmt.Println(doc)
-	//}
-
-	//json.NewEncoder(w).Encode(results)
-	//w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(results)
+	w.WriteHeader(http.StatusOK)
 }
 
 func getBook(w http.ResponseWriter, r *http.Request) {
-	log.Println("getBook called")
+	log.Info("getBook called")
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r) // Get Params
-	// Iterate through books and find with id
-	for _, item := range books {
-		if item.ID == params["id"] {
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode((item))
-			return
-		}
+
+	params := mux.Vars(r)
+
+	mongoDataStore := NewDatastore(cfg, log)
+
+	filter := bson.D{
+		{"isbn", params["id"]},
 	}
-	// json.NewEncoder(w).Encode(&Book{})
-	w.WriteHeader(http.StatusNotFound)
+	cursor, err := query(mongoDataStore, "testCollection", filter)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var results []bson.D
+
+	if err := cursor.All(mongoDataStore.Context, &results); err != nil {
+		panic(err)
+	}
+
+	json.NewEncoder(w).Encode(results)
+	w.WriteHeader(http.StatusOK)
 }
 
 var addBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,8 +91,15 @@ var addBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	var book Book
 	_ = json.NewDecoder(r.Body).Decode(&book)
-	book.ID = strconv.Itoa(rand.Intn(1000000)) // mock data - not safe
-	books = append(books, book)
+	mongoDataStore := NewDatastore(cfg, log)
+	result, err := insertOne(mongoDataStore, "testCollection", book)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Result of InsertOne")
+	fmt.Println(result.InsertedID)
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(book)
 })
@@ -110,30 +108,47 @@ var updateBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	log.Println("updateBook called")
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	for index, item := range books {
-		if item.ID == params["id"] {
-			books = append(books[:index], books[index+1:]...)
-			var book Book
-			_ = json.NewDecoder(r.Body).Decode(&book)
-			book.ID = params["id"]
-			books = append(books, book)
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(book)
-			return
-		}
+
+	var book Book
+	_ = json.NewDecoder(r.Body).Decode(&book)
+
+	filter := bson.D{
+		{"isbn", params["id"]},
 	}
+
+	mongoDataStore := NewDatastore(cfg, log)
+
+	updateBook := bson.M{
+		"$set": book,
+	}
+	result, err := UpdateOne(mongoDataStore, "testCollection", filter, updateBook)
+
+	if err != nil {
+		panic(err)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 })
 
 var deleteBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	log.Println("deleteBook called")
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	for index, item := range books {
-		if item.ID == params["id"] {
-			books = append(books[:index], books[index+1:]...)
-			break
-		}
+
+	mongoDataStore := NewDatastore(cfg, log)
+	query := bson.D{
+		{"isbn", params["id"]},
 	}
+
+	result, err := deleteOne(mongoDataStore, "testCollection", query)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("No.of rows affected by DeleteOne()")
+	fmt.Println(result.DeletedCount)
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(books)
 })
@@ -148,9 +163,13 @@ func handleRequests() {
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/books", getBooks).Methods("GET")
 	router.HandleFunc("/books/{id}", getBook).Methods("GET")
-	router.Handle("/books", authMiddleware(addBookHandler)).Methods("POST")
-	router.Handle("/books/{id}", authMiddleware(updateBookHandler)).Methods("PUT")
-	router.Handle("/books/{id}", authMiddleware(deleteBookHandler)).Methods("DELETE")
+	// router.Handle("/books", authMiddleware(addBookHandler)).Methods("POST")
+	// router.Handle("/books/{id}", authMiddleware(updateBookHandler)).Methods("PUT")
+	// router.Handle("/books/{id}", authMiddleware(deleteBookHandler)).Methods("DELETE")
+
+	router.HandleFunc("/books", addBookHandler).Methods("POST")
+	router.HandleFunc("/books/{id}", updateBookHandler).Methods("PUT")
+	router.HandleFunc("/books/{id}", deleteBookHandler).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8000", handlers.LoggingHandler(os.Stdout, router)))
 }
@@ -169,10 +188,6 @@ func processError(err error) {
 
 func main() {
 
-	// Hardcoded data - @todo: add database
-	//book1 := Book{ID: "1", Isbn: "438227", Title: "Book One", Author: &Author{Firstname: "John", Lastname: "Doe"}}
-	//book2 := Book{ID: "2", Isbn: "454555", Title: "Book Two", Author: &Author{Firstname: "Steve", Lastname: "Smith"}}
-
 	f, err := os.Open(".config.yml")
 	if err != nil {
 		processError(err)
@@ -185,30 +200,9 @@ func main() {
 		processError(err)
 	}
 
-	//fmt.Println(cfg)
-
-	//logger := logrus.Logger{
-	//  Out: os.Stdout,
-	//}
 	log.Out = os.Stdout
+	log.Info("Server Started!")
+
 	handleRequests()
-
-	//log.Printf("Log message")
-
-	//fmt.Println(mongoDataStore)
-
-	//defer close(client, ctx, cancel)
-
-	//_, err = insertOne(mongoDataStore, "testCollection", book1)
-	//if err != nil {
-	//  panic(err)
-	//}
-	//println("book2 inserted")
-
-	//_, err = insertOne(mongoDataStore, "testCollection", book2)
-	//if err != nil {
-	//  panic(err)
-	//}
-	//println("book2 inserted")
 
 }
