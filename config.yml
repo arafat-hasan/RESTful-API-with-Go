@@ -1,0 +1,11 @@
+database:
+  dburi: "mongodb://127.0.0.1:27017"
+  dbname: "testDB"
+  dbuser: ""
+  dbpass: ""
+
+server:
+  port: 8000
+
+EXAMPLE_VAR: "variable+from+config.yml"
+EXAMPLE_PATH: "path+from+config.yml"

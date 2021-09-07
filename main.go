@@ -5,13 +5,32 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
-	"gopkg.in/yaml.v2"
 )
+
+type Configurations struct {
+	Server       ServerConfigurations
+	Database     DatabaseConfigurations
+	EXAMPLE_PATH string
+	EXAMPLE_VAR  string
+}
+
+type ServerConfigurations struct {
+	Port int
+}
+
+type DatabaseConfigurations struct {
+	DBName     string
+	DBUser     string
+	DBPassword string
+	DBURI      string
+}
 
 type Book struct {
 	ID     string  `json:"id" bson:"id"`
@@ -27,7 +46,7 @@ type Author struct {
 
 var books []Book
 var log = logrus.New()
-var cfg Config
+var configuration Configurations
 
 func homePage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -38,7 +57,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	log.Println("getBooks called")
 	w.Header().Set("Content-Type", "application/json")
-	mongoDataStore := NewDatastore(cfg, log)
+	mongoDataStore := NewDatastore(configuration, log)
 
 	filter := bson.D{}
 	cursor, err := query(mongoDataStore, "testCollection", filter)
@@ -61,7 +80,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
-	mongoDataStore := NewDatastore(cfg, log)
+	mongoDataStore := NewDatastore(configuration, log)
 
 	filter := bson.D{
 		{"isbn", params["id"]},
@@ -86,7 +105,7 @@ var addBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	var book Book
 	_ = json.NewDecoder(r.Body).Decode(&book)
-	mongoDataStore := NewDatastore(cfg, log)
+	mongoDataStore := NewDatastore(configuration, log)
 	result, err := insertOne(mongoDataStore, "testCollection", book)
 	if err != nil {
 		panic(err)
@@ -111,7 +130,7 @@ var updateBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		{"isbn", params["id"]},
 	}
 
-	mongoDataStore := NewDatastore(cfg, log)
+	mongoDataStore := NewDatastore(configuration, log)
 
 	updateBook := bson.M{
 		"$set": book,
@@ -131,7 +150,7 @@ var deleteBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 
-	mongoDataStore := NewDatastore(cfg, log)
+	mongoDataStore := NewDatastore(configuration, log)
 	query := bson.D{
 		{"isbn", params["id"]},
 	}
@@ -166,38 +185,32 @@ func handleRequests() {
 	router.HandleFunc("/books/{id}", updateBookHandler).Methods("PUT")
 	router.HandleFunc("/books/{id}", deleteBookHandler).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(":8000", handlers.LoggingHandler(os.Stdout, router)))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(configuration.Server.Port), handlers.LoggingHandler(os.Stdout, router)))
 }
 
-type Config struct {
-	Database struct {
-		Name string `yaml:"name"`
-		Host string `yaml:"host"`
-	} `yaml:"database"`
-}
+func initConfig() {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	viper.SetConfigType("yml")
 
-func processError(err error) {
-	fmt.Println(err)
-	os.Exit(2)
+	if err := viper.ReadInConfig(); err != nil {
+		log.Printf("Error reading config file, %s", err)
+	}
+	//viper.SetDefault("database.dbuser", "test_usr")
+
+	err := viper.Unmarshal(&configuration)
+	if err != nil {
+		log.Printf("Unable to decode into struct, %v", err)
+	}
+	fmt.Println(configuration)
 }
 
 func main() {
 
-	f, err := os.Open(".config.yml")
-	if err != nil {
-		processError(err)
-	}
-	defer f.Close()
-
-	decoder := yaml.NewDecoder(f)
-	err = decoder.Decode(&cfg)
-	if err != nil {
-		processError(err)
-	}
-
 	log.Out = os.Stdout
+	initConfig()
+
 	log.Info("Server Started!")
-
 	handleRequests()
-
 }

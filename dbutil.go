@@ -84,7 +84,7 @@ func deleteMany(mongoDataStore *MongoDatastore, _collection string, query interf
 
 const CONNECTED = "Successfully connected to database: "
 
-func NewDatastore(config Config, logger *logrus.Logger) *MongoDatastore {
+func NewDatastore(config Configurations, logger *logrus.Logger) *MongoDatastore {
 
 	var mongoDataStore *MongoDatastore
 	db, client, ctx := connect(config, logger)
@@ -100,12 +100,12 @@ func NewDatastore(config Config, logger *logrus.Logger) *MongoDatastore {
 		return mongoDataStore
 	}
 
-	logger.Fatalf("Failed to connect to database: %v", config.Database.Name)
+	logger.Fatalf("Failed to connect to database: %v", config.Database.DBName)
 
 	return nil
 }
 
-func connect(generalConfig Config, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client, c context.Context) {
+func connect(generalConfig Configurations, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client, c context.Context) {
 	var connectOnce sync.Once
 	var db *mongo.Database
 	var client *mongo.Client
@@ -117,10 +117,10 @@ func connect(generalConfig Config, logger *logrus.Logger) (a *mongo.Database, b 
 	return db, client, ctx
 }
 
-func connectToMongo(generalConfig Config, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client, c context.Context) {
+func connectToMongo(generalConfig Configurations, logger *logrus.Logger) (a *mongo.Database, b *mongo.Client, c context.Context) {
 
 	var err error
-	client, err := mongo.NewClient(options.Client().ApplyURI(generalConfig.Database.Host))
+	client, err := mongo.NewClient(options.Client().ApplyURI(generalConfig.Database.DBURI))
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -130,8 +130,8 @@ func connectToMongo(generalConfig Config, logger *logrus.Logger) (a *mongo.Datab
 		logger.Fatal(err)
 	}
 
-	var DB = client.Database(generalConfig.Database.Name)
-	logger.Info(CONNECTED, generalConfig.Database.Name)
+	var DB = client.Database(generalConfig.Database.DBName)
+	logger.Info(CONNECTED, generalConfig.Database.DBName)
 
 	return DB, client, ctx
 }
