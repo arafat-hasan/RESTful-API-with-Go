@@ -17,3 +17,5 @@ bin/*
 
 RESTful-API-with-Go
 *.env
+vendor/
+.DS_Store
