@@ -1,9 +1,7 @@
  Learning RESTful API with Go
 
 
-
-
-Simple RESTful API to create, read, update and delete books. No database implementation yet
+Simple RESTful API to create, read, update and delete books with MongoDB.
 
 
 ```
