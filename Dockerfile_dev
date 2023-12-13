@@ -1,0 +1,26 @@
+FROM ubuntu:jammy
+
+ENV TZ=Asia/Dhaka
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8    
+
+RUN apt-get update
+RUN apt-get install -y software-properties-common apt-utils sudo
+RUN apt-get install -y curl ssh locales net-tools iputils-ping vim git fish
+
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN useradd -rm -d /home/user -s /bin/fish -g root -G sudo -u 1001 user
+RUN echo 'user ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+
+RUN curl -OL https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+
+USER user
+WORKDIR /home/user/app
+
+RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
+
+ENTRYPOINT ["sleep", "infinity"]

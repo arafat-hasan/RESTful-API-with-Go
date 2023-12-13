@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: mongo
+    restart: always
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: sheldon
+    #   MONGO_INITDB_ROOT_PASSWORD: Baz1nga!
+    ports:
+      - 27017:27017
+    networks:
+      - net
+
+  app:
+    container_name: restful-api-with-go
+    stdin_open: true
+    build: 
+      context: .
+      dockerfile: Dockerfile_dev
+    ports:
+      - 8000:8000
+    depends_on:
+      - mongodb
+    restart: on-failure
+    networks:
+      - net
+    volumes:
+      - .:/home/user/app
+
+networks:
+  net:
