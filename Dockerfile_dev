@@ -1,7 +1,5 @@
 FROM ubuntu:jammy
 
-ARG UID
-ARG GID
 ARG USER
 ARG SSH_PRIVATE_KEY
 

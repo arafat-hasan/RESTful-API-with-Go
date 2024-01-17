@@ -19,8 +19,6 @@ services:
       context: .
       dockerfile: Dockerfile_dev
       args:
-        - UID=$UID
-        - GID=$GID
         - USER=$USER
         - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
     ports:
