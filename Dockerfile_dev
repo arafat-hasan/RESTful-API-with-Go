@@ -36,7 +36,6 @@ RUN echo "${SSH_PRIVATE_KEY}" > /home/$USER/.ssh/id_ed25519
 RUN chmod 600 /home/$USER/.ssh/id_ed25519
 RUN chown -R $USER:root /home/$USER/.ssh
 RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
-RUN echo "${SSH_PRIVATE_KEY}"
 
 COPY --chown=$USER:root . /home/$USER/app
 WORKDIR /home/$USER/app
