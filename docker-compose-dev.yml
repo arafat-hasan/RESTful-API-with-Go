@@ -18,6 +18,11 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile_dev
+      args:
+        - UID=$UID
+        - GID=$GID
+        - USER=$USER
+        - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
     ports:
       - 8000:8000
     depends_on:
@@ -25,8 +30,10 @@ services:
     restart: on-failure
     networks:
       - net
-    volumes:
-      - .:/home/user/app
+    # volumes:
+    #   - .:/home/$USER/app
+      # - $HOME/.ssh:$HOME/.ssh:ro
+    #   - $SSH_AUTH_SOCK:/ssh-agent
 
 networks:
   net:
