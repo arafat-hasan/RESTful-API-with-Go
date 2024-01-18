@@ -28,10 +28,6 @@ services:
     restart: on-failure
     networks:
       - net
-    # volumes:
-    #   - .:/home/$USER/app
-      # - $HOME/.ssh:$HOME/.ssh:ro
-    #   - $SSH_AUTH_SOCK:/ssh-agent
 
 networks:
   net:

@@ -16,28 +16,25 @@ RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN useradd -rm -d /home/$USER -s /bin/fish -g root -G sudo $USER
-# RUN addgroup --gid $GID $USER
-# RUN adduser --disabled-password --gecos "" $USER
 RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-# RUN mkdir -p -m 0700 ~/.ssh
-# RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
-# RUN --mount=type=ssh ssh -q -T git@github.com 2>&1 | tee /hello
+RUN mkdir -p /home/$USER/.ssh
+RUN echo "${SSH_PRIVATE_KEY}" > /home/$USER/.ssh/id_ed25519
+
+RUN chmod 600 /home/$USER/.ssh/id_ed25519
+RUN chown -R $USER:root /home/$USER/.ssh
+RUN chmod 700 /home/$USER/.ssh/
+
+RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+COPY --chown=$USER:root . /home/$USER/app
+
+RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
 
 RUN curl -OL https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
 
 USER $USER
-
-RUN mkdir -p /home/$USER/.ssh
-RUN echo "${SSH_PRIVATE_KEY}" > /home/$USER/.ssh/id_ed25519
-RUN chmod 600 /home/$USER/.ssh/id_ed25519
-RUN chown -R $USER:root /home/$USER/.ssh
-RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-COPY --chown=$USER:root . /home/$USER/app
 WORKDIR /home/$USER/app
-
-RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
 
 ENTRYPOINT ["sleep", "infinity"]
