@@ -20,12 +20,11 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 RUN mkdir -p /home/$USER/.ssh
 RUN echo "${SSH_PRIVATE_KEY}" > /home/$USER/.ssh/id_ed25519
+RUN ssh-keyscan github.com >> /home/$USER/.ssh/known_hosts
 
 RUN chmod 600 /home/$USER/.ssh/id_ed25519
 RUN chown -R $USER:root /home/$USER/.ssh
 RUN chmod 700 /home/$USER/.ssh/
-
-RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 COPY --chown=$USER:root . /home/$USER/app
 
