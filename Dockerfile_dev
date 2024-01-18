@@ -30,8 +30,8 @@ COPY --chown=$USER:root . /home/$USER/app
 
 RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
 
-RUN curl -OL https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+RUN curl -OL https://go.dev/dl/go1.21.6.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
 
 USER $USER
 WORKDIR /home/$USER/app
