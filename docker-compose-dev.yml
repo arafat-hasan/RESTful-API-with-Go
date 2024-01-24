@@ -20,7 +20,11 @@ services:
       dockerfile: Dockerfile_dev
       args:
         - USER=$USER
-        - SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
+    environment:
+      - SSH_AUTH_SOCK=/ssh-agent
+    volumes:
+      - ${SSH_AUTH_SOCK}:/ssh-agent
+      - $HOME/Share:$HOME/Share
     ports:
       - 8000:8000
     depends_on:
