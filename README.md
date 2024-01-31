@@ -12,6 +12,7 @@ echo $SSH_AUTH_SOCK
 Prepare Development Environment
 ```
 docker compose -f docker-compose-dev.yml up -d
+SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock  docker compose -f ./docker-compose-dev.yml up -d # On mac
 ```
 
 ```
