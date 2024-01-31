@@ -23,8 +23,8 @@ services:
     environment:
       - SSH_AUTH_SOCK=/ssh-agent
     volumes:
-      - ${SSH_AUTH_SOCK}:/ssh-agent
-      - $HOME/Share:$HOME/Share
+      - $SSH_AUTH_SOCK:/ssh-agent
+      - $HOME/Share:/home/$USER/Share
     ports:
       - 8000:8000
     depends_on:
