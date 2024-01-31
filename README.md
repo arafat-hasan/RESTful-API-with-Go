@@ -3,17 +3,11 @@
 
 Simple RESTful API to create, read, update and delete books with MongoDB.
 
-Make sure that `SSH_AUTH_SOCK` is set.
-
-```
-echo $SSH_AUTH_SOCK
-```
-
-Prepare Development Environment
+# Prepare Development Environment
 ```
 docker compose -f docker-compose-dev.yml up -d
-SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock  docker compose -f ./docker-compose-dev.yml up -d # On mac
 ```
+Now click on the "Attach to the running container" on VSCODE.
 
 ```
 go build
