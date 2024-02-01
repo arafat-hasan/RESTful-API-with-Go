@@ -2,6 +2,7 @@ version: "3.7"
 
 services:
   mongodb:
+    container_name: restful-api-with-go-mongodb
     image: mongo
     restart: always
     # environment:
