@@ -2,7 +2,7 @@ FROM ubuntu:jammy
 
 ARG USER
 
-ENV TZ=Asia/Dhaka
+ENV TZ Asia/Dhaka
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -23,6 +23,8 @@ RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
 
 RUN curl -OL https://go.dev/dl/go1.21.6.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
+ENV GOPATH /home/$USER/go
+ENV PATH $PATH:/home/$USER/go/bin
 
 USER $USER
 WORKDIR /home/$USER/app

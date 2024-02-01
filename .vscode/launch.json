@@ -11,6 +11,8 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}",
+            "output": "${workspaceFolder}/__debug_bin",
             "env": {},
             "args": [],
             "showLog": true
