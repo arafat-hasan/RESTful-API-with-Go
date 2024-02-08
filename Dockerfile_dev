@@ -20,14 +20,14 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
 
-USER $USER
-WORKDIR /home/$USER/app
-
 RUN curl -OL https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
 ENV GOPATH /home/$USER/go
 ENV PATH $PATH:/home/$USER/go/bin
 
 COPY --chown=$USER:root . /home/$USER/app
+
+USER $USER
+WORKDIR /home/$USER/app
 
 ENTRYPOINT ["sleep", "infinity"]
