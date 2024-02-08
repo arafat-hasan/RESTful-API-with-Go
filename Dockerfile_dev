@@ -8,8 +8,9 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update
-RUN apt-get install -y software-properties-common apt-utils sudo
-RUN apt-get install -y curl ssh locales net-tools iputils-ping vim git fish
+RUN apt-get install -y software-properties-common apt-utils sudo locales
+RUN apt-get update --fix-missing
+RUN apt-get install -y curl ssh net-tools iputils-ping vim git fish
 
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -17,16 +18,16 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN useradd -rm -d /home/$USER -s /bin/fish -g root -G sudo $USER
 RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-COPY --chown=$USER:root . /home/$USER/app
-
 RUN /bin/fish -c "set -U fish_user_paths /usr/local/go/bin $fish_user_paths"
-
-RUN curl -OL https://go.dev/dl/go1.21.6.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
-ENV GOPATH /home/$USER/go
-ENV PATH $PATH:/home/$USER/go/bin
 
 USER $USER
 WORKDIR /home/$USER/app
+
+RUN curl -OL https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+ENV GOPATH /home/$USER/go
+ENV PATH $PATH:/home/$USER/go/bin
+
+COPY --chown=$USER:root . /home/$USER/app
 
 ENTRYPOINT ["sleep", "infinity"]
