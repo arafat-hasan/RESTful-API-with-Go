@@ -72,7 +72,6 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(results)
-	w.WriteHeader(http.StatusOK)
 }
 
 func getBook(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +82,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	mongoDataStore := NewDatastore(configuration, log)
 
 	filter := bson.D{
-		{"isbn", params["id"]},
+		{Key: "isbn", Value: params["id"]},
 	}
 	cursor, err := query(mongoDataStore, "testCollection", filter)
 
@@ -97,7 +96,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(results)
-	w.WriteHeader(http.StatusOK)
 }
 
 var addBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +125,7 @@ var updateBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 	_ = json.NewDecoder(r.Body).Decode(&book)
 
 	filter := bson.D{
-		{"isbn", params["id"]},
+		{Key: "isbn", Value: params["id"]},
 	}
 
 	mongoDataStore := NewDatastore(configuration, log)
@@ -152,7 +150,7 @@ var deleteBookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	mongoDataStore := NewDatastore(configuration, log)
 	query := bson.D{
-		{"isbn", params["id"]},
+		{Key: "isbn", Value: params["id"]},
 	}
 
 	result, err := deleteOne(mongoDataStore, "testCollection", query)
