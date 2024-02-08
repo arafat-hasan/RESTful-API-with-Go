@@ -177,9 +177,9 @@ func handleRequests() {
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/books", getBooks).Methods("GET")
 	router.HandleFunc("/books/{id}", getBook).Methods("GET")
-	// router.Handle("/books", authMiddleware(addBookHandler)).Methods("POST")
-	// router.Handle("/books/{id}", authMiddleware(updateBookHandler)).Methods("PUT")
-	// router.Handle("/books/{id}", authMiddleware(deleteBookHandler)).Methods("DELETE")
+	router.Handle("/books", authMiddleware(addBookHandler)).Methods("POST")
+	router.Handle("/books/{id}", authMiddleware(updateBookHandler)).Methods("PUT")
+	router.Handle("/books/{id}", authMiddleware(deleteBookHandler)).Methods("DELETE")
 
 	router.HandleFunc("/books", addBookHandler).Methods("POST")
 	router.HandleFunc("/books/{id}", updateBookHandler).Methods("PUT")
