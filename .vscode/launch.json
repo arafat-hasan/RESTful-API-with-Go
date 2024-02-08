@@ -15,7 +15,6 @@
             "output": "${workspaceFolder}/__debug_bin",
             "env": {},
             "args": [],
-            "showLog": true
         }
     ]
 }
