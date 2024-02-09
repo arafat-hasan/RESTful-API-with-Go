@@ -8,6 +8,7 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update
+RUN apt-get update --fix-missing
 RUN apt-get install -y software-properties-common apt-utils sudo locales
 RUN apt-get update --fix-missing
 RUN apt-get install -y curl ssh net-tools iputils-ping vim git fish
@@ -21,7 +22,8 @@ RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN curl -OL https://go.dev/dl/go1.22.0.linux-$(dpkg --print-architecture).tar.gz
 RUN tar -C /usr/local -xzf go1.22.0.linux-$(dpkg --print-architecture).tar.gz
 ENV GOPATH /home/$USER/go
-ENV PATH $PATH:/home/$USER/go/bin
+ENV GOROOT /usr/local/go
+ENV PATH $PATH:/home/$USER/go/bin:/usr/local/go/bin
 
 COPY --chown=$USER:root . /home/$USER/app
 
